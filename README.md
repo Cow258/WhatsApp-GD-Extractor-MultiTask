@@ -1,9 +1,11 @@
 # WhatsApp Google Drive Extractor
 Allows WhatsApp users on Android to extract their backed up WhatsApp data from Google Drive.  
+Mullti task modified version.
+Project from : https://github.com/EliteAndroidApps/WhatsApp-GD-Extractor
+
 
 ###### BRANCH UPDATES:
-v1.0 - Initial release.  
-v1.1 - Added Python 3 support.  
+v1.0 - Add 20 threads for download files.  
 
 
 ###### PREREQUISITES:
@@ -22,6 +24,26 @@ v1.1 - Added Python 3 support.
  4. Read the usage examples that are displayed.  
  5. Run any of the examples.  
  
+ 
+###### Additional Youtube readme by techpanther:
+ 
+How to Extract Whatsapp Database from Google Drive | Read all Messages
+https://www.youtube.com/watch?v=7ZMEgcpD9vc
+
+How to install python 3.6 on Windows 10
+https://www.youtube.com/watch?v=8WZ5xNd-uiM
+
+Downlaod Python
+https://www.python.org/downloads/
+
+Downlaod Request Module
+https://pypi.python.org/pypi/requests
+
+How to extract database from google drive and read all messages
+https://youtu.be/7ZMEgcpD9vc
+
+HOw to Decrypt whatsapp database
+https://youtu.be/12-frtnz7AQ
 
 ###### TROUBLESHOOTING:
  1. Check you have the required imports installed (configparser and requests).  

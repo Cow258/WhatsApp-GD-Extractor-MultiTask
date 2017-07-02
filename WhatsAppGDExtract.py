@@ -6,6 +6,11 @@ import os
 import re
 import requests
 import sys
+import queue
+import threading
+import time
+
+exitFlag = 0
 
 def getGoogleAccountTokenFromAuth():
     payload = {'Email':gmail, 'Passwd':passw, 'app':client_pkg, 'client_sig':client_sig, 'parentAndroidId':devid}
@@ -104,17 +109,82 @@ def getSingleFile(data, asset):
         if entries['f'] == asset:
             return entries['f'], entries['m'], entries['r'], entries['s']
 
+class myThread (threading.Thread):
+    def __init__(self, threadID, name, q):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.q = q
+    def run(self):
+        print ("开启线程：" + self.name)
+        process_data(self.name, self.q)
+        print ("退出线程：" + self.name)
+
+def process_data(threadName, q):
+    while not exitFlag:
+        queueLock.acquire()
+        if not workQueue.empty():
+            data = q.get()
+            queueLock.release()
+            getMultipleFilesThread(data['bearer'], data['entries_r'], data['local'], data['entries_m'], threadName)
+        else:
+            queueLock.release()
+        time.sleep(1)
+
+def getMultipleFilesThread(bearer, entries_r, local, entries_m, threadName):
+        url = 'https://www.googleapis.com/drive/v2/files/'+entries_r+'?alt=media'
+        if not os.path.exists(os.path.dirname(local)):
+            os.makedirs(os.path.dirname(local))
+        if os.path.isfile(local):
+            os.remove(local)
+        headers = {'Authorization': 'Bearer '+bearer}
+        request = requests.get(url, headers=headers, stream=True)
+        request.raw.decode_content = True
+        if request.status_code == 200:
+            with open(local, 'wb') as asset:
+                for chunk in request.iter_content(1024):
+                    asset.write(chunk)
+        print(threadName + '=> Downloaded: "'+local+'".')
+        logfile = 'logs'+os.path.sep+'files.log'
+        if not os.path.exists(os.path.dirname(logfile)):
+            os.makedirs(os.path.dirname(logfile))
+        with open(logfile, 'a') as log:
+            log.write(entries_m+'\n')
+
+queueLock = threading.Lock()
+workQueue = queue.Queue(9999999)
+
 def getMultipleFiles(data, folder):
+    threadList = ["Thread-1", "Thread-2", "Thread-3", "Thread-4", "Thread-5", "Thread-6", "Thread-7", "Thread-8", "Thread-9", "Thread-10", "Thread-11", "Thread-12", "Thread-13", "Thread-14", "Thread-15", "Thread-16", "Thread-17", "Thread-18", "Thread-19", "Thread-20"]
+    threads = []
+    threadID = 1
+    # 创建新线程
+    for tName in threadList:
+        thread = myThread(threadID, tName, workQueue)
+        thread.start()
+        threads.append(thread)
+        threadID += 1
     files = localFileList()
     data = json.loads(data)
+    # 填充队列
+    queueLock.acquire()
     for entries in data:
         if any(entries['m'] in lists for lists in files) == False or 'database' in entries['f'].lower():
             local = folder+os.path.sep+entries['f'].replace("/", os.path.sep)
             if os.path.isfile(local) and 'database' not in local.lower():
-                quit('Skipped: "'+local+'".')
+                print('Skipped: "'+local+'".')
             else:
-                downloadFileGoogleDrive(bearer, 'https://www.googleapis.com/drive/v2/files/'+entries['r']+'?alt=media', local)
-                localFileLog(entries['m'])
+                workQueue.put({'bearer':bearer, 'entries_r':entries['r'], 'local':local, 'entries_m':entries['m']})
+    queueLock.release()
+    # 等待队列清空
+    while not workQueue.empty():
+        pass
+    # 通知线程是时候退出
+    exitFlag = 1
+    # 等待所有线程完成
+    for t in threads:
+        t.join()
+    print ("退出主线程")
 
 def runMain(mode, asset, bID):
     global bearer

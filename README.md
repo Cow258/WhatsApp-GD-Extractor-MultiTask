@@ -1,7 +1,7 @@
 # WhatsApp Google Drive Extractor
 Allows WhatsApp users on Android to extract their backed up WhatsApp data from Google Drive.  
-Mullti task modified version.
-Project from : https://github.com/EliteAndroidApps/WhatsApp-GD-Extractor
+ Mullti task modified version.
+ Project from : https://github.com/EliteAndroidApps/WhatsApp-GD-Extractor
 
 
 ###### BRANCH UPDATES:
